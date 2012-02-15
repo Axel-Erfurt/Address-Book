@@ -1,0 +1,8 @@
+address_book
+-------------
+
+Simple GUI multi-user application to organize contacts.
+
+Implementation: Python3, PyQt4, SQLite3
+
+Status: Development

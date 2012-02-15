@@ -1,8 +1,13 @@
-address_book
+=============
+Address Book
+=============
+
+Description
+------------
+Address Book is a simple, GUI, platform independent, multi-user application which helps you to organize your contacts.
+The application is written in python3 and PyQt4. All code is licensed under the GNU GPL3 license.
+
+Dependencies
 -------------
-
-Simple GUI multi-user application to organize contacts.
-
-Implementation: Python3, PyQt4, SQLite3
-
-Status: Development
+python (< 3.0)
+PyQt4

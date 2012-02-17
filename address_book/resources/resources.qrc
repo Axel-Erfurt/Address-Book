@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+<file alias="addressbook.jpeg">../../data/addressbook.jpeg</file>
+<file alias="addcontact.jpeg">../../data/addcontact.jpeg</file>
+</qresource>
+</RCC>

@@ -17,9 +17,9 @@
 
 import sqlite3
 
-class PrimaryKeyError(sqlite3.IntegrityError): pass
-
 class Database:
+    class PrimaryKeyError(sqlite3.IntegrityError): pass
+
     def __init__(self):
         self.connection = sqlite3.connect("test.db")
         self.cursor = self.connection.cursor()
@@ -53,12 +53,26 @@ class Database:
 
     def get_users(self):
         return [i[0] for i in self.cursor.execute('SELECT name FROM users')]
-        
+
     def addto_users(self, name):
         try:
             self.cursor.execute('INSERT INTO users(name) VALUES(?)', (name,))
         except sqlite3.IntegrityError:
-            raise PrimaryKeyError('There is already a user with this name!')
+            raise self.PrimaryKeyError(
+                                     'There is already a user with this name!')
+        self.commit()
+
+    def edit_user(self, newname, oldname):
+        try:
+            _tuple = (newname, oldname)
+            self.cursor.execute('UPDATE users SET name=? WHERE name=?', _tuple)
+        except sqlite3.IntegrityError:
+            raise self.PrimaryKeyError(
+                                     'There is already a user with this name!')
+        self.commit()
+
+    def delete_user(self, name):
+        self.cursor.execute('DELETE FROM users WHERE name=?', (name,))
         self.commit()
 
     def commit(self):

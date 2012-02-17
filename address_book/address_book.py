@@ -16,11 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __init__ import __version__
+from resources import qrc_resources
 
 from PyQt4.QtCore import QSize
 from PyQt4.QtGui import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                   QHBoxLayout, QLabel, QComboBox, QListWidget, QLineEdit,
-                  QPushButton, QToolButton, QFrame, QIcon, QPixmap)
+                  QPushButton, QToolButton, QFrame, QIcon)
 
 import sys
 import pyqttools
@@ -50,11 +51,8 @@ class MainWindow(QMainWindow):
             vlayout1.addLayout(hlayout)
 
         addToolButton = QToolButton()
-        addToolButton.setMinimumSize(QSize(50, 50))
-#        icon = QIcon()
-#        icon.addPixmap(QPixmap(path), QIcon.Normal, QIcon.Off)
-#        addToolButton.setIcon(icon)
-#        addToolButton.setIconSize(QSize(45, 45))
+        addToolButton.setIcon(QIcon(':addcontact.jpeg'))
+        addToolButton.setIconSize(QSize(45, 45))
         self.showLabel = QLabel()
         self.showLabel.setFrameShape(QFrame.StyledPanel)
         editButton = QPushButton('Edit')

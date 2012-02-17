@@ -24,11 +24,15 @@ from PyQt4.QtGui import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                   QPushButton, QToolButton, QFrame, QIcon)
 
 import sys
+import dialogs
 import pyqttools
+import database
+
+database = database.Database()
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, user, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle('Address Book')
         self.resize(704, 459)
@@ -74,7 +78,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(Widget)
 
         self.statusBar = self.statusBar()
-        self.userLabel = QLabel()
+        self.userLabel = QLabel('User:  ' + user)
         self.statusBar.addPermanentWidget(self.userLabel)
 
         panelAction = pyqttools.create_action(self, 'User panel',
@@ -118,9 +122,13 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    address_book = MainWindow()
-    address_book.show()
-    app.exec_()
+    app.setWindowIcon(QIcon(':/addressbook.jpeg'))
+
+    dialog = dialogs.UserPanelDlg()
+    if dialog.exec_():
+        address_book = MainWindow(dialog.user)
+        address_book.show()
+        app.exec_()
 
 if __name__ == '__main__':
     main()

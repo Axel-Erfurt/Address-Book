@@ -21,7 +21,7 @@ from resources import qrc_resources
 from PyQt4.QtCore import QSize
 from PyQt4.QtGui import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                   QHBoxLayout, QLabel, QComboBox, QListWidget, QLineEdit,
-                  QPushButton, QToolButton, QFrame, QIcon)
+                  QPushButton, QToolButton, QFrame, QIcon, QListWidgetItem)
 
 import sys
 import dialogs
@@ -31,11 +31,17 @@ import database
 database = database.Database()
 
 
+class MyListItem(QListWidgetItem):
+    def __init__(self, text, _id, parent=None):
+        super(MyListItem, self).__init__(text, parent)
+        self._id = _id
+
 class MainWindow(QMainWindow):
     def __init__(self, user, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle('Address Book')
         self.resize(704, 459)
+        self.user = user
 
         categLabel = QLabel('Category:')
         self.categComboBox = QComboBox()
@@ -78,7 +84,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(Widget)
 
         self.statusBar = self.statusBar()
-        self.userLabel = QLabel('User:  ' + user)
+        self.userLabel = QLabel()
         self.statusBar.addPermanentWidget(self.userLabel)
 
         panelAction = pyqttools.create_action(self, 'User panel',
@@ -103,6 +109,35 @@ class MainWindow(QMainWindow):
         pyqttools.add_actions(contactsMenu, [add_contactAction])
         pyqttools.add_actions(deleteMenu,[delete_allAction,delete_categAction])
         pyqttools.add_actions(helpMenu, [aboutAction])
+
+        self.fill_categComboBox()
+
+        self.categComboBox.currentIndexChanged.connect(self.fill_ListWidget)
+
+        self.refresh_userLabel()
+
+    def fill_categComboBox(self):
+        categories = ['All']
+        categories.extend([i[1] for i in database.get_categories(self.user)])
+        self.categComboBox.clear()
+        self.categComboBox.addItems(categories)
+        self.fill_ListWidget()
+
+    def fill_ListWidget(self):
+        self.contactsListWidget.clear()
+        category = self.categComboBox.currentText()
+        if category == 'All':
+            contacts = database.get_all_contacts(self.user)
+        else:
+            categ_id = database.get_category_id(category, self.user)
+            contacts = database.get_contacts(categ_id)
+        for i in contacts:
+            _id, name, surname = i[0], i[1], i[2]
+            item = MyListItem(name+' '+surname, _id)
+            self.contactsListWidget.addItem(item)
+
+    def refresh_userLabel(self):
+        self.userLabel.setText('User:  '+self.user)
 
     def user_panel(self):
         pass

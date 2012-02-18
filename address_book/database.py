@@ -28,16 +28,14 @@ class Database:
     def create_tables(self):
         self.cur.execute('''
             CREATE TABLE IF NOT EXISTS users(
-            name TEXT PRIMARY KEY
-            )''')
+            name TEXT PRIMARY KEY)''')
 
         self.cur.execute('''
             CREATE TABLE IF NOT EXISTS categories(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             user TEXT REFERENCES users(name)
-            ON UPDATE CASCADE ON DELETE CASCADE
-            )''')
+            ON UPDATE CASCADE ON DELETE CASCADE)''')
 
         self.cur.execute('''
             CREATE TABLE IF NOT EXISTS contacts(
@@ -48,8 +46,7 @@ class Database:
             address TEXT,
             telephone INTEGER,
             category INTEGER REFERENCES categories(id)
-            ON UPDATE CASCADE ON DELETE CASCADE
-            )''')
+            ON UPDATE CASCADE ON DELETE CASCADE)''')
 
     def get_users(self):
         return [i[0] for i in self.cur.execute('SELECT name FROM users')]
@@ -79,7 +76,10 @@ class Database:
 
     def get_category_id(self, name, user):
         self.cur.execute('SELECT id FROM categories WHERE name=? AND user=?',(name, user))
-        return self.cur.fetchall()[0][0]
+        try:
+            return self.cur.fetchall()[0][0]
+        except:
+            return None
 
     def addto_categories(self, name, user):
         if name in [i[1] for i in self.get_categories(user)]:

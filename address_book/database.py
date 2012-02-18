@@ -22,16 +22,16 @@ class Database:
 
     def __init__(self):
         self.connection = sqlite3.connect("test.db")
-        self.cursor = self.connection.cursor()
+        self.cur = self.connection.cursor()
         self.create_tables()
 
     def create_tables(self):
-        self.cursor.execute('''
+        self.cur.execute('''
             CREATE TABLE IF NOT EXISTS users(
             name TEXT PRIMARY KEY
             )''')
 
-        self.cursor.execute('''
+        self.cur.execute('''
             CREATE TABLE IF NOT EXISTS categories(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
@@ -39,7 +39,7 @@ class Database:
             ON UPDATE CASCADE ON DELETE CASCADE
             )''')
 
-        self.cursor.execute('''
+        self.cur.execute('''
             CREATE TABLE IF NOT EXISTS contacts(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
@@ -52,27 +52,54 @@ class Database:
             )''')
 
     def get_users(self):
-        return [i[0] for i in self.cursor.execute('SELECT name FROM users')]
+        return [i[0] for i in self.cur.execute('SELECT name FROM users')]
 
     def addto_users(self, name):
         try:
-            self.cursor.execute('INSERT INTO users(name) VALUES(?)', (name,))
+            self.cur.execute('INSERT INTO users(name) VALUES(?)', (name,))
         except sqlite3.IntegrityError:
-            raise self.PrimaryKeyError(
-                                     'There is already a user with this name!')
+            raise self.PrimaryKeyError('There is already a user with this name!')
         self.commit()
 
     def edit_user(self, newname, oldname):
         try:
             _tuple = (newname, oldname)
-            self.cursor.execute('UPDATE users SET name=? WHERE name=?', _tuple)
+            self.cur.execute('UPDATE users SET name=? WHERE name=?', _tuple)
         except sqlite3.IntegrityError:
-            raise self.PrimaryKeyError(
-                                     'There is already a user with this name!')
+            raise self.PrimaryKeyError('There is already a user with this name!')
         self.commit()
 
     def delete_user(self, name):
-        self.cursor.execute('DELETE FROM users WHERE name=?', (name,))
+        self.cur.execute('DELETE FROM users WHERE name=?', (name,))
+        self.commit()
+
+    def get_categories(self, user):
+        self.cur.execute('SELECT * FROM categories WHERE user=?', (user,))
+        return self.cur.fetchall()
+
+    def get_category_id(self, name, user):
+        self.cur.execute('SELECT id FROM categories WHERE name=? AND user=?',(name, user))
+        return self.cur.fetchall()[0][0]
+
+    def addto_categories(self, name, user):
+        if name in [i[1] for i in self.get_categories(user)]:
+            raise self.PrimaryKeyError('There is already a category with this name!')
+        self.cur.execute('INSERT INTO categories(name, user) VALUES(?, ?)', (name, user))
+        self.commit()
+
+    def get_contacts(self, categ):
+        self.cur.execute('SELECT * FROM contacts WHERE category=?', (categ,))
+        return self.cur.fetchall()
+
+    def get_all_contacts(self, user):
+        categories = tuple(i[0] for i in self.get_categories(user))
+        cmd = 'SELECT * FROM contacts WHERE category IN {0}'.format(categories)
+        return self.cur.execute(cmd).fetchall()
+
+    def addto_contacts(self, name, surname, mail, address, telephone, category):
+        cmd = 'INSERT INTO contacts(name, surname, mail, address, telephone, '
+        cmd += 'category) VALUES(?, ?, ?, ?, ?, ?)'
+        self.cur.execute(cmd, (name, surname, mail, address, telephone, category))
         self.commit()
 
     def commit(self):

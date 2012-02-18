@@ -110,10 +110,9 @@ class MainWindow(QMainWindow):
         pyqttools.add_actions(deleteMenu,[delete_allAction,delete_categAction])
         pyqttools.add_actions(helpMenu, [aboutAction])
 
-        self.fill_categComboBox()
-
         self.categComboBox.currentIndexChanged.connect(self.fill_ListWidget)
 
+        self.fill_categComboBox()
         self.refresh_userLabel()
 
     def fill_categComboBox(self):
@@ -128,19 +127,24 @@ class MainWindow(QMainWindow):
         category = self.categComboBox.currentText()
         if category == 'All':
             contacts = database.get_all_contacts(self.user)
-        else:
+        else:           
             categ_id = database.get_category_id(category, self.user)
+            if categ_id is None: return
             contacts = database.get_contacts(categ_id)
         for i in contacts:
             _id, name, surname = i[0], i[1], i[2]
             item = MyListItem(name+' '+surname, _id)
-            self.contactsListWidget.addItem(item)
+            self.contactsListWidget.addItem(item)            
 
     def refresh_userLabel(self):
         self.userLabel.setText('User:  '+self.user)
 
     def user_panel(self):
-        pass
+        dialog = dialogs.UserPanelDlg(self)
+        if dialog.exec_():
+            self.user = dialog.user
+            self.fill_categComboBox()
+            self.refresh_userLabel()
 
     def add_contact(self):
         pass
@@ -153,7 +157,10 @@ class MainWindow(QMainWindow):
 
     def about(self):
         pass
-
+    
+    def close(self):
+        database.close()
+        QMainWindow.close(self)
 
 def main():
     app = QApplication(sys.argv)

@@ -15,16 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt4.QtGui import (QHBoxLayout, QVBoxLayout, QDialog, QFrame, QLabel,
-                  QLineEdit, QComboBox, QPushButton, QDialogButtonBox,
-                  QMessageBox)
+from PyQt4.QtGui import (QHBoxLayout, QVBoxLayout, QGridLayout, QDialog,
+                  QFrame, QLabel, QLineEdit, QComboBox, QPushButton,
+                  QDialogButtonBox, QMessageBox)
 
 import pyqttools
 
 
-class AddOrEditDlg(QDialog):
+class AddOrEditUserDlg(QDialog):
     def __init__(self, oldname, edit=False, parent=None):
-        super(AddOrEditDlg, self).__init__(parent)
+        super(AddOrEditUserDlg, self).__init__(parent)
         self.edit = edit
         title = 'Add User' if not self.edit else 'Edit User'
         self.setWindowTitle('Address Book - ' + title)
@@ -34,13 +34,12 @@ class AddOrEditDlg(QDialog):
         self.oldname = oldname
 
         text = 'New user:' if not self.edit else 'New username:'
-        label = QLabel(text)
         self.userLineEdit = QLineEdit()
         if self.edit: self.userLineEdit.setText(self.oldname)
         self.buttonBox = QDialogButtonBox(
                                    QDialogButtonBox.Ok|QDialogButtonBox.Cancel)
 
-        hlayout1 = pyqttools.add_to_layout(QHBoxLayout(), (label, None))
+        hlayout1 = pyqttools.add_to_layout(QHBoxLayout(), (QLabel(text), None))
         hlayout2 = pyqttools.add_to_layout(QHBoxLayout(),(None, self.buttonBox))
         f_layout = pyqttools.add_to_layout(QVBoxLayout(), (hlayout1,
                                                   self.userLineEdit, hlayout2))
@@ -104,19 +103,19 @@ class UserPanelDlg(QDialog):
         self.userComboBox.setEnabled(bool(users))
 
     def add_user(self):
-        dialog = AddOrEditDlg('', False, self)
+        dialog = AddOrEditUserDlg('', False, self)
         dialog.exec_()
         self.fill_combobox()
 
     def edit_user(self):
-        dialog = AddOrEditDlg(self.userComboBox.currentText(), True, self)
+        dialog = AddOrEditUserDlg(self.userComboBox.currentText(), True, self)
         dialog.exec_()
         self.fill_combobox()
 
     def delete_user(self):
         user = self.userComboBox.currentText()
         reply = QMessageBox.question(self, "Address Book - Delete User",
-                      "Are sou sure that you want to delete {0};".format(user),
+                      "Are sou sure that you want to delete {0}?".format(user),
                                             QMessageBox.Yes|QMessageBox.Cancel)
         if reply == QMessageBox.Yes:
             self.db.delete_user(user)
@@ -129,3 +128,50 @@ class UserPanelDlg(QDialog):
     def reject(self):
         self.parent.close()
         QDialog.reject(self)
+
+class AddorEditContactDlg(QDialog):
+    def __init__(self, edit=False, data=[], parent=None):
+        super(AddorEditContactDlg, self).__init__(parent)
+        title = 'Add' if not edit else 'Edit'
+        self.setWindowTitle('Address Book - {0} Contact'.format(title))
+        self.resize(345, 279)
+
+        self.nameLineEdit = QLineEdit()
+        self.surnameLineEdit = QLineEdit()
+        self.mailLineEdit = QLineEdit()
+        self.addressLineEdit = QLineEdit()
+        self.telLineEdit = QLineEdit()
+        self.categLineEdit = QLineEdit()
+        self.categComboBox = QComboBox()
+        self.buttonBox = QDialogButtonBox(
+                                   QDialogButtonBox.Ok|QDialogButtonBox.Cancel)
+
+        lineedits = (self.nameLineEdit, self.surnameLineEdit,
+                     self.mailLineEdit, self.addressLineEdit, self.telLineEdit)
+        labels = ('Name:', 'Surname:', 'e-mail:', 'Address:', 'Telephone:')
+        grid_tuple = ()
+        for label, line in zip(labels, lineedits):
+            grid_tuple += ((QLabel(label), line),)
+        grid = pyqttools.add_to_grid(QGridLayout(), grid_tuple)
+
+        hlayout1 = pyqttools.add_to_layout(QHBoxLayout(), (grid, None))
+        _tuple = (QLabel('Category:'), self.categComboBox, QLabel('New:'),
+                                                      self.categLineEdit ,None)
+        hlayout2 = pyqttools.add_to_layout(QHBoxLayout(), _tuple)
+        hlayout3 = pyqttools.add_to_layout(QHBoxLayout(), (None, self.buttonBox))
+        f_layout = pyqttools.add_to_layout(QVBoxLayout(), (hlayout1, hlayout2,
+                                                               None, hlayout3))
+        self.setLayout(f_layout)
+
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+
+if __name__ == '__main__':
+    #test    
+    from PyQt4.QtGui import QApplication
+    import sys
+    app = QApplication(sys.argv)
+    dialog = AddorEditContactDlg()
+    dialog.show()
+    app.exec_()

@@ -47,17 +47,15 @@ class MainWindow(QMainWindow):
         else:
             self.close()
 
-        categLabel = QLabel('Category:')
         self.categComboBox = QComboBox()
         self.cont_numLabel = QLabel()
         self.contactsListWidget = QListWidget()
-        searchLabel = QLabel('Search')
         self.searchLineEdit = QLineEdit()
 
-        widgets = ((categLabel, self.categComboBox),
+        widgets = ((QLabel('Category:'), self.categComboBox),
                    (self.cont_numLabel, None),
                    (self.contactsListWidget,),
-                   (searchLabel, self.searchLineEdit))
+                   (QLabel('Search:'), self.searchLineEdit))
         vlayout1 = QVBoxLayout()
 
         for i in widgets:
@@ -124,8 +122,10 @@ class MainWindow(QMainWindow):
     def fill_categComboBox(self):
         categories = ['All']
         categories.extend([i[1] for i in self.db.get_categories(self.user)])
+        self.categComboBox.currentIndexChanged.disconnect(self.fill_ListWidget)
         self.categComboBox.clear()
         self.categComboBox.addItems(categories)
+        self.categComboBox.currentIndexChanged.connect(self.fill_ListWidget)
         self.fill_ListWidget()
 
     def fill_ListWidget(self):
@@ -152,7 +152,7 @@ class MainWindow(QMainWindow):
         self.userLabel.setText('User:  '+self.user)
 
     def refresh_contacts_number(self):
-        text = 'Contacts Numer: {0}'.format(self.contactsListWidget.count())
+        text = 'Contacts Numer:  {0}'.format(self.contactsListWidget.count())
         self.cont_numLabel.setText(text)
 
     def set_buttons_enabled(self):

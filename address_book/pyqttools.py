@@ -51,8 +51,8 @@ def add_to_grid(layout, items):
               items in the same tuple will be added to the same line
     """
     # for now it adds only 1 item per cell.
-    for x, _list in enumerate(items):
-        for y, item in enumerate(_list):
+    for x, _tuple in enumerate(items):
+        for y, item in enumerate(_tuple):
             if isinstance(item, QWidget):
                 layout.addWidget(item, x, y)
             elif isinstance(item, QLayout):

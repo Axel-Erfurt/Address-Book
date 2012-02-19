@@ -80,10 +80,7 @@ class Database:
 
     def get_category_id(self, name, user):
         self.cur.execute('SELECT id FROM categories WHERE name=? AND user=?',(name, user))
-        try:
-            return self.cur.fetchall()[0][0]
-        except:
-            return None
+        return self.cur.fetchall()[0][0]
 
     def addto_categories(self, name, user):
         if name in [i[1] for i in self.get_categories(user)]:

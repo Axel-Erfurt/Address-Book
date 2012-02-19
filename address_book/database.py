@@ -70,6 +70,10 @@ class Database:
         self.cur.execute('DELETE FROM users WHERE name=?', (name,))
         self.commit()
 
+    def get_category_from_id(self, _id):
+        self.cur.execute('SELECT name FROM categories WHERE id=?', (_id,))
+        return self.cur.fetchall()[0][0]
+
     def get_categories(self, user):
         self.cur.execute('SELECT * FROM categories WHERE user=?', (user,))
         return self.cur.fetchall()
@@ -86,6 +90,10 @@ class Database:
             raise self.PrimaryKeyError('There is already a category with this name!')
         self.cur.execute('INSERT INTO categories(name, user) VALUES(?, ?)', (name, user))
         self.commit()
+
+    def get_contact_from_id(self, _id):
+        self.cur.execute('SELECT * FROM contacts WHERE id=?', (_id,))
+        return self.cur.fetchall()
 
     def get_contacts(self, categ):
         self.cur.execute('SELECT * FROM contacts WHERE category=?', (categ,))

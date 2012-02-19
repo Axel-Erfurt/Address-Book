@@ -18,7 +18,7 @@
 from __init__ import __version__
 from resources import qrc_resources
 
-from PyQt4.QtCore import QSize, Qt
+from PyQt4.QtCore import Qt, QSize
 from PyQt4.QtGui import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                   QHBoxLayout, QLabel, QComboBox, QListWidget, QLineEdit,
                   QPushButton, QToolButton, QFrame, QIcon, QListWidgetItem)
@@ -28,8 +28,6 @@ import dialogs
 import pyqttools
 import database
 
-database = database.Database()
-
 
 class MyListItem(QListWidgetItem):
     def __init__(self, text, _id, parent=None):
@@ -37,11 +35,17 @@ class MyListItem(QListWidgetItem):
         self._id = _id
 
 class MainWindow(QMainWindow):
-    def __init__(self, user, parent=None):
+    def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle('Address Book')
         self.resize(704, 459)
-        self.user = user
+        self.db = database.Database()
+
+        dialog = dialogs.UserPanelDlg(self)
+        if dialog.exec_():
+            self.user = dialog.user
+        else:
+            self.close()
 
         categLabel = QLabel('Category:')
         self.categComboBox = QComboBox()
@@ -119,7 +123,7 @@ class MainWindow(QMainWindow):
 
     def fill_categComboBox(self):
         categories = ['All']
-        categories.extend([i[1] for i in database.get_categories(self.user)])
+        categories.extend([i[1] for i in self.db.get_categories(self.user)])
         self.categComboBox.clear()
         self.categComboBox.addItems(categories)
         self.fill_ListWidget()
@@ -127,19 +131,19 @@ class MainWindow(QMainWindow):
     def fill_ListWidget(self):
         self.showLabel.clear()
         self.contactsListWidget.clear()
-        
+
         category = self.categComboBox.currentText()
         if category == 'All':
-            contacts = database.get_all_contacts(self.user)
+            contacts = self.db.get_all_contacts(self.user)
         else:
-            categ_id = database.get_category_id(category, self.user)
+            categ_id = self.db.get_category_id(category, self.user)
             if categ_id is None: return
-            contacts = database.get_contacts(categ_id)
+            contacts = self.db.get_contacts(categ_id)
         for i in contacts:
             _id, name, surname = i[0], i[1], i[2]
             item = MyListItem(name+' '+surname, _id)
             self.contactsListWidget.addItem(item)
-        
+
         self.contactsListWidget.setCurrentRow(0)
         self.refresh_contacts_number()
         self.set_buttons_enabled()
@@ -150,11 +154,11 @@ class MainWindow(QMainWindow):
     def refresh_contacts_number(self):
         text = 'Contacts Numer: {0}'.format(self.contactsListWidget.count())
         self.cont_numLabel.setText(text)
-        
+
     def set_buttons_enabled(self):
         enable = bool(self.contactsListWidget)
         self.editButton.setEnabled(enable)
-        self.delButton.setEnabled(enable)        
+        self.delButton.setEnabled(enable)
 
     def user_panel(self):
         dialog = dialogs.UserPanelDlg(self)
@@ -169,8 +173,8 @@ class MainWindow(QMainWindow):
         except AttributeError:
             return
         _id, name, surname, mail, address, tel, categ_id = \
-                                           database.get_contact_from_id(_id)[0]
-        category = database.get_category_from_id(categ_id)
+                                           self.db.get_contact_from_id(_id)[0]
+        category = self.db.get_category_from_id(categ_id)
         text = ''
         data = (name, surname, mail, address, tel, category)
         labs = ('Name', 'Surname', 'e-mail', 'Address', 'Telephone', 'Category')
@@ -193,18 +197,16 @@ class MainWindow(QMainWindow):
         pass
 
     def close(self):
-        database.close()
-        QMainWindow.close(self)
+        self.db.close()
+        sys.exit()
+
 
 def main():
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(':/addressbook.jpeg'))
-
-    dialog = dialogs.UserPanelDlg()
-    if dialog.exec_():
-        address_book = MainWindow(dialog.user)
-        address_book.show()
-        app.exec_()
+    address_book = MainWindow()
+    address_book.show()
+    app.exec_()
 
 if __name__ == '__main__':
     main()

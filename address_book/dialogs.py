@@ -19,7 +19,6 @@ from PyQt4.QtGui import (QHBoxLayout, QVBoxLayout, QDialog, QFrame, QLabel,
                   QLineEdit, QComboBox, QPushButton, QDialogButtonBox,
                   QMessageBox)
 
-from address_book import database
 import pyqttools
 
 
@@ -27,10 +26,12 @@ class AddOrEditDlg(QDialog):
     def __init__(self, oldname, edit=False, parent=None):
         super(AddOrEditDlg, self).__init__(parent)
         self.edit = edit
-        self.oldname = oldname
         title = 'Add User' if not self.edit else 'Edit User'
         self.setWindowTitle('Address Book - ' + title)
         self.resize(260, 111)
+
+        self.db = parent.db
+        self.oldname = oldname
 
         text = 'New user:' if not self.edit else 'New username:'
         label = QLabel(text)
@@ -40,7 +41,7 @@ class AddOrEditDlg(QDialog):
                                    QDialogButtonBox.Ok|QDialogButtonBox.Cancel)
 
         hlayout1 = pyqttools.add_to_layout(QHBoxLayout(), (label, None))
-        hlayout2 =pyqttools.add_to_layout(QHBoxLayout(),(None, self.buttonBox))
+        hlayout2 = pyqttools.add_to_layout(QHBoxLayout(),(None, self.buttonBox))
         f_layout = pyqttools.add_to_layout(QVBoxLayout(), (hlayout1,
                                                   self.userLineEdit, hlayout2))
         self.setLayout(f_layout)
@@ -51,11 +52,11 @@ class AddOrEditDlg(QDialog):
     def add_or_edit_user(self):
         try:
             if not self.edit:
-                database.addto_users(self.userLineEdit.text())
+                self.db.addto_users(self.userLineEdit.text())
             else:
-                database.edit_user(self.userLineEdit.text(), self.oldname)
+                self.db.edit_user(self.userLineEdit.text(), self.oldname)
             QDialog.accept(self)
-        except database.PrimaryKeyError as e:
+        except self.db.PrimaryKeyError as e:
             QMessageBox.warning(self, 'Address Book - Error!', str(e))
 
 
@@ -64,6 +65,9 @@ class UserPanelDlg(QDialog):
         super(UserPanelDlg, self).__init__(parent)
         self.setWindowTitle('Address Book - User Panel')
         self.resize(330, 164)
+
+        self.parent = parent
+        self.db = self.parent.db
 
         chooseLabel = QLabel('Choose User:')
         self.userComboBox = QComboBox()
@@ -94,28 +98,28 @@ class UserPanelDlg(QDialog):
         self.fill_combobox()
 
     def fill_combobox(self):
-        users = database.get_users()
+        users = self.db.get_users()
         self.userComboBox.clear()
         self.userComboBox.addItems(users)
         self.userComboBox.setEnabled(bool(users))
 
     def add_user(self):
-        dialog = AddOrEditDlg('', False)
+        dialog = AddOrEditDlg('', False, self)
         dialog.exec_()
         self.fill_combobox()
 
     def edit_user(self):
-        dialog = AddOrEditDlg(self.userComboBox.currentText(), True)
+        dialog = AddOrEditDlg(self.userComboBox.currentText(), True, self)
         dialog.exec_()
         self.fill_combobox()
 
     def delete_user(self):
         user = self.userComboBox.currentText()
         reply = QMessageBox.question(self, "Address Book - Delete User",
-                       "Are sou sure that you want to delete {};".format(user),
+                      "Are sou sure that you want to delete {0};".format(user),
                                             QMessageBox.Yes|QMessageBox.Cancel)
         if reply == QMessageBox.Yes:
-            database.delete_user(user)
+            self.db.delete_user(user)
             self.fill_combobox()
 
     def accept(self):
@@ -123,5 +127,5 @@ class UserPanelDlg(QDialog):
         QDialog.accept(self)
 
     def reject(self):
-        database.close()
+        self.parent.close()
         QDialog.reject(self)

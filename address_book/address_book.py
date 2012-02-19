@@ -18,7 +18,7 @@
 from __init__ import __version__
 from resources import qrc_resources
 
-from PyQt4.QtCore import QSize
+from PyQt4.QtCore import QSize, Qt
 from PyQt4.QtGui import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                   QHBoxLayout, QLabel, QComboBox, QListWidget, QLineEdit,
                   QPushButton, QToolButton, QFrame, QIcon, QListWidgetItem)
@@ -45,13 +45,13 @@ class MainWindow(QMainWindow):
 
         categLabel = QLabel('Category:')
         self.categComboBox = QComboBox()
-        cont_numLabel = QLabel('Contacts Number:')
+        self.cont_numLabel = QLabel()
         self.contactsListWidget = QListWidget()
         searchLabel = QLabel('Search')
         self.searchLineEdit = QLineEdit()
 
         widgets = ((categLabel, self.categComboBox),
-                   (cont_numLabel, None),
+                   (self.cont_numLabel, None),
                    (self.contactsListWidget,),
                    (searchLabel, self.searchLineEdit))
         vlayout1 = QVBoxLayout()
@@ -65,12 +65,13 @@ class MainWindow(QMainWindow):
         addToolButton.setIconSize(QSize(45, 45))
         self.showLabel = QLabel()
         self.showLabel.setFrameShape(QFrame.StyledPanel)
-        editButton = QPushButton('Edit')
-        convertButton = QPushButton('Convert')
+        self.showLabel.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+        self.editButton = QPushButton('Edit')
+        self.delButton = QPushButton('Delete')
 
         widgets = ((None, addToolButton, None),
                    (self.showLabel,),
-                   (None, editButton, convertButton))
+                   (None, self.editButton, self.delButton))
         vlayout2 = QVBoxLayout()
 
         for i in widgets:
@@ -111,6 +112,7 @@ class MainWindow(QMainWindow):
         pyqttools.add_actions(helpMenu, [aboutAction])
 
         self.categComboBox.currentIndexChanged.connect(self.fill_ListWidget)
+        self.contactsListWidget.currentRowChanged.connect(self.show_contact)
 
         self.fill_categComboBox()
         self.refresh_userLabel()
@@ -123,21 +125,36 @@ class MainWindow(QMainWindow):
         self.fill_ListWidget()
 
     def fill_ListWidget(self):
+        self.showLabel.clear()
         self.contactsListWidget.clear()
+        
         category = self.categComboBox.currentText()
         if category == 'All':
             contacts = database.get_all_contacts(self.user)
-        else:           
+        else:
             categ_id = database.get_category_id(category, self.user)
             if categ_id is None: return
             contacts = database.get_contacts(categ_id)
         for i in contacts:
             _id, name, surname = i[0], i[1], i[2]
             item = MyListItem(name+' '+surname, _id)
-            self.contactsListWidget.addItem(item)            
+            self.contactsListWidget.addItem(item)
+        
+        self.contactsListWidget.setCurrentRow(0)
+        self.refresh_contacts_number()
+        self.set_buttons_enabled()
 
     def refresh_userLabel(self):
         self.userLabel.setText('User:  '+self.user)
+
+    def refresh_contacts_number(self):
+        text = 'Contacts Numer: {0}'.format(self.contactsListWidget.count())
+        self.cont_numLabel.setText(text)
+        
+    def set_buttons_enabled(self):
+        enable = bool(self.contactsListWidget)
+        self.editButton.setEnabled(enable)
+        self.delButton.setEnabled(enable)        
 
     def user_panel(self):
         dialog = dialogs.UserPanelDlg(self)
@@ -145,6 +162,23 @@ class MainWindow(QMainWindow):
             self.user = dialog.user
             self.fill_categComboBox()
             self.refresh_userLabel()
+
+    def show_contact(self):
+        try:
+            _id = self.contactsListWidget.currentItem()._id
+        except AttributeError:
+            return
+        _id, name, surname, mail, address, tel, categ_id = \
+                                           database.get_contact_from_id(_id)[0]
+        category = database.get_category_from_id(categ_id)
+        text = ''
+        data = (name, surname, mail, address, tel, category)
+        labs = ('Name', 'Surname', 'e-mail', 'Address', 'Telephone', 'Category')
+        for i, y in zip(labs, data):
+            text += '''<p style=\' margin-top:0px; margin-bottom:0px; \'>
+                  <span style=\' font-weight:600;\'>{0}:</span> {1} </p>\n'''\
+                                                                  .format(i, y)
+        self.showLabel.setText(text)
 
     def add_contact(self):
         pass
@@ -157,7 +191,7 @@ class MainWindow(QMainWindow):
 
     def about(self):
         pass
-    
+
     def close(self):
         database.close()
         QMainWindow.close(self)

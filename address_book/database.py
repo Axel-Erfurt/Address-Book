@@ -107,6 +107,14 @@ class Database:
         self.cur.execute(cmd, (name, surname, mail, address, telephone, category))
         self.commit()
 
+    def delete_contact(self, _id):
+        self.cur.execute('DELETE FROM contacts WHERE id=?', (_id,))
+        self.commit()
+
+    def delete_all_contacts(self):
+        self.cur.execute('DELETE FROM contacts')
+        self.commit()
+
     def commit(self):
         self.connection.commit()
 

@@ -21,6 +21,7 @@ from PyQt4.QtGui import (QHBoxLayout, QVBoxLayout, QGridLayout, QDialog,
 
 import pyqttools
 
+class ValidationError(Exception): pass
 
 class AddOrEditUserDlg(QDialog):
     def __init__(self, oldname, edit=False, parent=None):
@@ -103,13 +104,11 @@ class UserPanelDlg(QDialog):
         self.userComboBox.setEnabled(bool(users))
 
     def add_user(self):
-        dialog = AddOrEditUserDlg('', False, self)
-        dialog.exec_()
+        AddOrEditUserDlg('', False, self).exec_()
         self.fill_combobox()
 
     def edit_user(self):
-        dialog = AddOrEditUserDlg(self.userComboBox.currentText(), True, self)
-        dialog.exec_()
+        AddOrEditUserDlg(self.userComboBox.currentText(), True, self).exec_()
         self.fill_combobox()
 
     def delete_user(self):
@@ -130,11 +129,12 @@ class UserPanelDlg(QDialog):
         QDialog.reject(self)
 
 class AddorEditContactDlg(QDialog):
-    def __init__(self, edit=False, data=[], parent=None):
+    def __init__(self, categories, edit=False, data=[], parent=None):
         super(AddorEditContactDlg, self).__init__(parent)
         title = 'Add' if not edit else 'Edit'
         self.setWindowTitle('Address Book - {0} Contact'.format(title))
         self.resize(345, 279)
+        self.categories = categories
 
         self.nameLineEdit = QLineEdit()
         self.surnameLineEdit = QLineEdit()
@@ -146,11 +146,11 @@ class AddorEditContactDlg(QDialog):
         self.buttonBox = QDialogButtonBox(
                                    QDialogButtonBox.Ok|QDialogButtonBox.Cancel)
 
-        lineedits = (self.nameLineEdit, self.surnameLineEdit,
+        self.lineedits = (self.nameLineEdit, self.surnameLineEdit,
                      self.mailLineEdit, self.addressLineEdit, self.telLineEdit)
         labels = ('Name:', 'Surname:', 'e-mail:', 'Address:', 'Telephone:')
         grid_tuple = ()
-        for label, line in zip(labels, lineedits):
+        for label, line in zip(labels, self.lineedits):
             grid_tuple += ((QLabel(label), line),)
         grid = pyqttools.add_to_grid(QGridLayout(), grid_tuple)
 
@@ -163,15 +163,45 @@ class AddorEditContactDlg(QDialog):
                                                                None, hlayout3))
         self.setLayout(f_layout)
 
+        self.categComboBox.currentIndexChanged.connect(self.enable_LineEdit)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
+        self.fill_combobox()
 
-if __name__ == '__main__':
-    #test    
-    from PyQt4.QtGui import QApplication
-    import sys
-    app = QApplication(sys.argv)
-    dialog = AddorEditContactDlg()
-    dialog.show()
-    app.exec_()
+        if edit:
+            for num, line in enumerate(self.lineedits):
+                line.setText(data[num])
+            categ = self.categComboBox.findText(data[5])
+            self.categComboBox.setCurrentIndex(categ)
+
+    def fill_combobox(self):
+        self.categComboBox.addItems(['New']+self.categories)
+
+    def enable_LineEdit(self):
+        enable = bool(self.categComboBox.currentText() == 'New')
+        self.categLineEdit.setEnabled(enable)
+
+    def validation(self):
+        if self.categLineEdit.isEnabled():
+            try:
+                if not self.categLineEdit.text():
+                    raise ValidationError('You should define a category name!')
+                elif self.categLineEdit.text() in self.categories:
+                    raise ValidationError(
+                                 'There is already a category with this name!')
+            except ValidationError as e:
+                QMessageBox.warning(self, "Address Book - Error!", str(e))
+                self.categLineEdit.selectAll()
+                self.categLineEdit.setFocus()
+                return False
+        return True
+
+    def accept(self):
+        if self.validation():
+            self.values = [i.text() for i in self.lineedits]
+            if self.categLineEdit.isEnabled():
+                self.values.append(self.categLineEdit.text())
+            else:
+                self.values.append(self.categComboBox.currentText())
+            QDialog.accept(self)

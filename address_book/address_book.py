@@ -18,12 +18,14 @@
 from __init__ import __version__
 from resources import qrc_resources
 
-from PyQt4.QtCore import Qt, QSize
+from PyQt4.QtCore import Qt, QSize, QT_VERSION_STR,PYQT_VERSION_STR
 from PyQt4.QtGui import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                   QHBoxLayout, QLabel, QComboBox, QListWidget, QLineEdit,
-                  QPushButton, QToolButton, QFrame, QIcon, QListWidgetItem)
+                  QPushButton, QToolButton, QFrame, QIcon, QListWidgetItem,
+                  QMessageBox)
 
 import sys
+import platform
 import dialogs
 import pyqttools
 import database
@@ -113,6 +115,8 @@ class MainWindow(QMainWindow):
         pyqttools.add_actions(deleteMenu,[delete_allAction,delete_categAction])
         pyqttools.add_actions(helpMenu, [aboutAction])
 
+        addToolButton.clicked.connect(self.add_contact)
+        self.delButton.clicked.connect(self.delete_contact)
         self.categComboBox.currentIndexChanged.connect(self.fill_ListWidget)
         self.contactsListWidget.currentRowChanged.connect(self.show_contact)
 
@@ -185,16 +189,50 @@ class MainWindow(QMainWindow):
         self.showLabel.setText(text)
 
     def add_contact(self):
+        categories = [i[1] for i in self.db.get_categories(self.user)]
+        dialog = dialogs.AddorEditContactDlg(categories)
+        if dialog.exec_():
+            data = dialog.values
+            if data[-1] not in categories:
+                self.db.addto_categories(data[-1], self.user)
+            categ = self.db.get_category_id(data[-1], self.user)
+            self.db.addto_contacts(data[0], data[1], data[2], data[3], data[4], categ)
+            self.fill_categComboBox()
+
+    def edit_contact(self):
         pass
 
+    def delete_contact(self):
+        reply = QMessageBox.question(self, "Address Book - Delete Contact",
+        "Are you sure that you want to delete this contact?",
+        QMessageBox.Yes|QMessageBox.Cancel)
+        if reply == QMessageBox.Yes:
+            _id = self.contactsListWidget.currentItem()._id
+            self.db.delete_contact(_id)
+            self.fill_ListWidget()
+
     def delete_all(self):
-        pass
+        reply = QMessageBox.question(self, "Address Book - Delete Contact",
+        "Are you sure that you want to delete all contacts?",
+        QMessageBox.Yes|QMessageBox.Cancel)
+        if reply == QMessageBox.Yes:
+            self.db.delete_all_contacts()
+            self.fill_ListWidget()
 
     def delete_categories(self):
         pass
 
     def about(self):
-        pass
+        link = 'http://wiki.ubuntu-gr.org/Address%20Book'
+        QMessageBox.about(self, self.tr('About') + ' FF Multi Converter',
+            '''<b> Address Book {0} </b>
+            <p>Organize your contacts!
+            <p>Copyright &copy; 2012 Ilias Stamatis
+            <br>License: GNU GPL3
+            <p><a href="{1}">http://wiki.ubuntu-gr.org/Address Book</a>
+            <p>Python {2} - Qt {3} - PyQt {4} on {5}'''
+            .format(__version__, link, platform.python_version()[:5],
+            QT_VERSION_STR, PYQT_VERSION_STR, platform.system()))
 
     def close(self):
         self.db.close()

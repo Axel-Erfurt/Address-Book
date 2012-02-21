@@ -95,11 +95,11 @@ class MainWindow(QMainWindow):
         c_action = pyqttools.create_action
         panelAction = c_action(self, 'User panel', triggered=self.user_panel)
         quitAction = c_action(self, 'Quit', 'Ctrl+Q',triggered=self.close)
-        add_contactAction = c_action(self, 'Add contact', 'Ctrl+N', 
+        add_contactAction = c_action(self, 'Add contact', 'Ctrl+N',
                                                     triggered=self.add_contact)
-        delete_allAction = c_action(self, 'Delete all contacts', 
+        delete_allAction = c_action(self, 'Delete all contacts',
                                                      triggered=self.delete_all)
-        delete_categAction = c_action(self, 'Delete categories', 
+        delete_categAction = c_action(self, 'Delete categories',
                                               triggered=self.delete_categories)
         aboutAction = c_action(self, 'About', 'Ctrl+?', triggered=self.about)
 
@@ -111,9 +111,10 @@ class MainWindow(QMainWindow):
         pyqttools.add_actions(fileMenu, [panelAction, None, quitAction])
         pyqttools.add_actions(contactsMenu, [add_contactAction])
         pyqttools.add_actions(deleteMenu,[delete_allAction,delete_categAction])
-        pyqttools.add_actions(helpMenu, [aboutAction])       
+        pyqttools.add_actions(helpMenu, [aboutAction])
 
         addToolButton.clicked.connect(self.add_contact)
+        self.editButton.clicked.connect(self.edit_contact)
         self.delButton.clicked.connect(self.delete_contact)
         self.categComboBox.currentIndexChanged.connect(self.fill_ListWidget)
         self.contactsListWidget.currentRowChanged.connect(self.show_contact)
@@ -193,12 +194,26 @@ class MainWindow(QMainWindow):
             data = dialog.values
             if data[-1] not in categories:
                 self.db.addto_categories(data[-1], self.user)
-            categ = self.db.get_category_id(data[-1], self.user)
-            self.db.addto_contacts(data[0], data[1], data[2], data[3], data[4], categ)
+            categ_id = self.db.get_category_id(data[-1], self.user)
+            data[-1] = categ_id
+            self.db.addto_contacts(data)
             self.fill_categComboBox()
 
     def edit_contact(self):
-        pass
+        _id = self.contactsListWidget.currentItem()._id
+        data = list(self.db.get_contact_from_id(_id)[0])
+        categ = self.db.get_category_from_id(data[-1])
+        data[-1] = categ
+        categories = [i[1] for i in self.db.get_categories(self.user)]
+        dialog = dialogs.AddorEditContactDlg(categories, True, data)
+        if dialog.exec_():
+            new_data = dialog.values
+            if new_data[-1] not in categories:
+                self.db.addto_categories(new_data[-1], self.user)
+            categ_id = self.db.get_category_id(new_data[-1], self.user)
+            new_data[-1] = categ_id
+            self.db.edit_contact(new_data, _id)
+            self.fill_categComboBox()
 
     def delete_contact(self):
         reply = QMessageBox.question(self, "Address Book - Delete Contact",
@@ -224,7 +239,7 @@ class MainWindow(QMainWindow):
         link = 'http://wiki.ubuntu-gr.org/Address%20Book'
         QMessageBox.about(self, self.tr('About') + ' FF Multi Converter',
             '''<b> Address Book {0} </b>
-            <p>Gui application to organize your contacts.
+            <p>Gui application to organize your contacts!
             <p>Copyright &copy; 2012 Ilias Stamatis
             <br>License: GNU GPL3
             <p><a href="{1}">http://wiki.ubuntu-gr.org/Address Book</a>

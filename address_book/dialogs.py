@@ -72,26 +72,27 @@ class UserPanelDlg(QDialog):
         chooseLabel = QLabel('Choose User:')
         self.userComboBox = QComboBox()
         newButton = QPushButton('New user')
-        editButton = QPushButton('Edit username')
-        deleteButton = QPushButton('Delete user')
-        connectButton = QPushButton('Connect')
+        self.editButton = QPushButton('Edit username')
+        self.deleteButton = QPushButton('Delete user')
+        self.connectButton = QPushButton('Connect')
         line = QFrame()
         line.setFrameShape(QFrame.VLine)
         line.setFrameShadow(QFrame.Sunken)
 
         add_l = pyqttools.add_to_layout
         hlayout1 = add_l(QHBoxLayout(), (chooseLabel, None))
-        hlayout2 = add_l(QHBoxLayout(), (None, connectButton))
+        hlayout2 = add_l(QHBoxLayout(), (None, self.connectButton))
         vlayout1 = add_l(QVBoxLayout(),(None, hlayout1,self.userComboBox, None))
-        vlayout2 = add_l(QVBoxLayout(), (newButton, editButton, deleteButton))
+        vlayout2 = add_l(QVBoxLayout(), (newButton, self.editButton,
+                                                            self.deleteButton))
         hlayout3 = add_l(QHBoxLayout(), (vlayout1, line, vlayout2))
         f_layout = add_l(QVBoxLayout(), (hlayout3, hlayout2))
         self.setLayout(f_layout)
 
         newButton.clicked.connect(self.add_user)
-        editButton.clicked.connect(self.edit_user)
-        deleteButton.clicked.connect(self.delete_user)
-        connectButton.clicked.connect(self.accept)
+        self.editButton.clicked.connect(self.edit_user)
+        self.deleteButton.clicked.connect(self.delete_user)
+        self.connectButton.clicked.connect(self.accept)
 
         self.fill_combobox()
 
@@ -100,6 +101,13 @@ class UserPanelDlg(QDialog):
         self.userComboBox.clear()
         self.userComboBox.addItems(users)
         self.userComboBox.setEnabled(bool(users))
+        self.enable_buttons()
+
+    def enable_buttons(self):
+        enable = bool(self.userComboBox.count() > 0)
+        self.editButton.setEnabled(enable)
+        self.deleteButton.setEnabled(enable)
+        self.connectButton.setEnabled(enable)
 
     def add_user(self):
         AddOrEditUserDlg('', False, self).exec_()
@@ -152,7 +160,7 @@ class AddorEditContactDlg(QDialog):
             grid_tuple += ((QLabel(label), line),)
         grid = pyqttools.add_to_grid(QGridLayout(), grid_tuple)
 
-        add_l = pyqttools.add_to_layout        
+        add_l = pyqttools.add_to_layout
         hlayout1 = add_l(QHBoxLayout(), (grid, None))
         _tuple = (QLabel('Category:'), self.categComboBox, QLabel('New:'),
                                                       self.categLineEdit ,None)
@@ -168,9 +176,9 @@ class AddorEditContactDlg(QDialog):
         self.fill_combobox()
 
         if edit:
-            for num, line in enumerate(self.lineedits):
+            for num, line in enumerate(self.lineedits, 1):
                 line.setText(data[num])
-            categ = self.categComboBox.findText(data[5])
+            categ = self.categComboBox.findText(data[-1])
             self.categComboBox.setCurrentIndex(categ)
 
     def fill_combobox(self):

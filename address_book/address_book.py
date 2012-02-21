@@ -24,6 +24,7 @@ from PyQt4.QtGui import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                   QPushButton, QToolButton, QFrame, QIcon, QListWidgetItem,
                   QMessageBox)
 
+import os
 import sys
 import platform
 import dialogs
@@ -41,7 +42,8 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle('Address Book')
         self.resize(704, 459)
-        self.db = database.Database('test.db')
+        db_file = self.database_file()        
+        self.db = database.Database(db_file)
 
         dialog = dialogs.UserPanelDlg(self)
         if dialog.exec_():
@@ -101,16 +103,20 @@ class MainWindow(QMainWindow):
                                                      triggered=self.delete_all)
         delete_categAction = c_action(self, 'Delete categories',
                                               triggered=self.delete_categories)
+        backupAction = c_action(self, 'Backup', triggered=self.backup)
+        restoreAction = c_action(self, 'Restore', triggered=self.restore)                                      
         aboutAction = c_action(self, 'About', 'Ctrl+?', triggered=self.about)
 
         fileMenu = self.menuBar().addMenu('File')
         contactsMenu = self.menuBar().addMenu('Contacts')
         deleteMenu = self.menuBar().addMenu(self.tr('Delete'))
+        backupMenu = self.menuBar().addMenu(self.tr('Backup'))
         helpMenu = self.menuBar().addMenu('Help')
 
         pyqttools.add_actions(fileMenu, [panelAction, None, quitAction])
         pyqttools.add_actions(contactsMenu, [add_contactAction])
         pyqttools.add_actions(deleteMenu,[delete_allAction,delete_categAction])
+        pyqttools.add_actions(backupMenu, [backupAction, restoreAction])
         pyqttools.add_actions(helpMenu, [aboutAction])
 
         addToolButton.clicked.connect(self.add_contact)
@@ -234,6 +240,20 @@ class MainWindow(QMainWindow):
 
     def delete_categories(self):
         pass
+
+    def backup(self):
+        pass
+
+    def restore(self):
+        pass    
+
+    def database_file(self):
+        _file = 'addressbook.db'
+        if not platform.platform().startswith('Windows'):
+            folder = os.getenv('HOME') + os.sep + '.addressbook'
+            if not os.path.exists(folder): os.mkdir(folder)
+            _file = folder + os.sep + _file
+        return _file
 
     def about(self):
         link = 'http://wiki.ubuntu-gr.org/Address%20Book'

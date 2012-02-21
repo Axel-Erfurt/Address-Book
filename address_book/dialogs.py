@@ -40,10 +40,10 @@ class AddOrEditUserDlg(QDialog):
         self.buttonBox = QDialogButtonBox(
                                    QDialogButtonBox.Ok|QDialogButtonBox.Cancel)
 
-        hlayout1 = pyqttools.add_to_layout(QHBoxLayout(), (QLabel(text), None))
-        hlayout2 = pyqttools.add_to_layout(QHBoxLayout(),(None, self.buttonBox))
-        f_layout = pyqttools.add_to_layout(QVBoxLayout(), (hlayout1,
-                                                  self.userLineEdit, hlayout2))
+        add_l = pyqttools.add_to_layout
+        hlayout1 = add_l(QHBoxLayout(), (QLabel(text), None))
+        hlayout2 = add_l(QHBoxLayout(),(None, self.buttonBox))
+        f_layout = add_l(QVBoxLayout(), (hlayout1,self.userLineEdit, hlayout2))
         self.setLayout(f_layout)
 
         self.buttonBox.accepted.connect(self.add_or_edit_user)
@@ -79,15 +79,13 @@ class UserPanelDlg(QDialog):
         line.setFrameShape(QFrame.VLine)
         line.setFrameShadow(QFrame.Sunken)
 
-        hlayout1 = pyqttools.add_to_layout(QHBoxLayout(), (chooseLabel, None))
-        hlayout2 = pyqttools.add_to_layout(QHBoxLayout(),(None, connectButton))
-        vlayout1 = pyqttools.add_to_layout(QVBoxLayout(), (None, hlayout1,
-                                                      self.userComboBox, None))
-        vlayout2 = pyqttools.add_to_layout(QVBoxLayout(), (newButton,
-                                                     editButton, deleteButton))
-        hlayout3 = pyqttools.add_to_layout(QHBoxLayout(), (vlayout1, line,
-                                                                     vlayout2))
-        f_layout = pyqttools.add_to_layout(QVBoxLayout(), (hlayout3, hlayout2))
+        add_l = pyqttools.add_to_layout
+        hlayout1 = add_l(QHBoxLayout(), (chooseLabel, None))
+        hlayout2 = add_l(QHBoxLayout(), (None, connectButton))
+        vlayout1 = add_l(QVBoxLayout(),(None, hlayout1,self.userComboBox, None))
+        vlayout2 = add_l(QVBoxLayout(), (newButton, editButton, deleteButton))
+        hlayout3 = add_l(QHBoxLayout(), (vlayout1, line, vlayout2))
+        f_layout = add_l(QVBoxLayout(), (hlayout3, hlayout2))
         self.setLayout(f_layout)
 
         newButton.clicked.connect(self.add_user)
@@ -154,13 +152,13 @@ class AddorEditContactDlg(QDialog):
             grid_tuple += ((QLabel(label), line),)
         grid = pyqttools.add_to_grid(QGridLayout(), grid_tuple)
 
-        hlayout1 = pyqttools.add_to_layout(QHBoxLayout(), (grid, None))
+        add_l = pyqttools.add_to_layout        
+        hlayout1 = add_l(QHBoxLayout(), (grid, None))
         _tuple = (QLabel('Category:'), self.categComboBox, QLabel('New:'),
                                                       self.categLineEdit ,None)
-        hlayout2 = pyqttools.add_to_layout(QHBoxLayout(), _tuple)
-        hlayout3 = pyqttools.add_to_layout(QHBoxLayout(), (None, self.buttonBox))
-        f_layout = pyqttools.add_to_layout(QVBoxLayout(), (hlayout1, hlayout2,
-                                                               None, hlayout3))
+        hlayout2 = add_l(QHBoxLayout(), _tuple)
+        hlayout3 = add_l(QHBoxLayout(), (None, self.buttonBox))
+        f_layout = add_l(QVBoxLayout(), (hlayout1, hlayout2, None, hlayout3))
         self.setLayout(f_layout)
 
         self.categComboBox.currentIndexChanged.connect(self.enable_LineEdit)

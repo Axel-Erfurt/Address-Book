@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle('Address Book')
         self.resize(704, 459)
-        self.db = database.Database()
+        self.db = database.Database('test.db')
 
         dialog = dialogs.UserPanelDlg(self)
         if dialog.exec_():
@@ -92,18 +92,16 @@ class MainWindow(QMainWindow):
         self.userLabel = QLabel()
         self.statusBar.addPermanentWidget(self.userLabel)
 
-        panelAction = pyqttools.create_action(self, 'User panel',
-                                                     triggered=self.user_panel)
-        quitAction = pyqttools.create_action(self, 'Quit', 'Ctrl+Q',
-                                                          triggered=self.close)
-        add_contactAction = pyqttools.create_action(self, 'Add contact',
-                                          'Ctrl+N', triggered=self.add_contact)
-        delete_allAction = pyqttools.create_action(self,
-                              'Delete all contacts', triggered=self.delete_all)
-        delete_categAction = pyqttools.create_action(self, 'Delete '
-                                'categories', triggered=self.delete_categories)
-        aboutAction = pyqttools.create_action(self, 'About', 'Ctrl+?',
-                                                          triggered=self.about)
+        c_action = pyqttools.create_action
+        panelAction = c_action(self, 'User panel', triggered=self.user_panel)
+        quitAction = c_action(self, 'Quit', 'Ctrl+Q',triggered=self.close)
+        add_contactAction = c_action(self, 'Add contact', 'Ctrl+N', 
+                                                    triggered=self.add_contact)
+        delete_allAction = c_action(self, 'Delete all contacts', 
+                                                     triggered=self.delete_all)
+        delete_categAction = c_action(self, 'Delete categories', 
+                                              triggered=self.delete_categories)
+        aboutAction = c_action(self, 'About', 'Ctrl+?', triggered=self.about)
 
         fileMenu = self.menuBar().addMenu('File')
         contactsMenu = self.menuBar().addMenu('Contacts')
@@ -113,7 +111,7 @@ class MainWindow(QMainWindow):
         pyqttools.add_actions(fileMenu, [panelAction, None, quitAction])
         pyqttools.add_actions(contactsMenu, [add_contactAction])
         pyqttools.add_actions(deleteMenu,[delete_allAction,delete_categAction])
-        pyqttools.add_actions(helpMenu, [aboutAction])
+        pyqttools.add_actions(helpMenu, [aboutAction])       
 
         addToolButton.clicked.connect(self.add_contact)
         self.delButton.clicked.connect(self.delete_contact)
@@ -226,7 +224,7 @@ class MainWindow(QMainWindow):
         link = 'http://wiki.ubuntu-gr.org/Address%20Book'
         QMessageBox.about(self, self.tr('About') + ' FF Multi Converter',
             '''<b> Address Book {0} </b>
-            <p>Organize your contacts!
+            <p>Gui application to organize your contacts.
             <p>Copyright &copy; 2012 Ilias Stamatis
             <br>License: GNU GPL3
             <p><a href="{1}">http://wiki.ubuntu-gr.org/Address Book</a>

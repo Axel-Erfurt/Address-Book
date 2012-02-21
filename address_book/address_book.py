@@ -124,6 +124,7 @@ class MainWindow(QMainWindow):
         self.delButton.clicked.connect(self.delete_contact)
         self.categComboBox.currentIndexChanged.connect(self.fill_ListWidget)
         self.contactsListWidget.currentRowChanged.connect(self.show_contact)
+        self.searchLineEdit.textEdited.connect(self.search)
 
         self.fill_categComboBox()
         self.refresh_userLabel()
@@ -140,6 +141,7 @@ class MainWindow(QMainWindow):
     def fill_ListWidget(self):
         self.showLabel.clear()
         self.contactsListWidget.clear()
+        if self.categComboBox.currentIndex() != 0: self.searchLineEdit.clear()
 
         category = self.categComboBox.currentText()
         if category == 'All':
@@ -149,9 +151,7 @@ class MainWindow(QMainWindow):
             if categ_id is None: return
             contacts = self.db.get_contacts(categ_id)
         for i in contacts:
-            _id, name, surname = i[0], i[1], i[2]
-            item = MyListItem(name+' '+surname, _id)
-            self.contactsListWidget.addItem(item)
+            self.contactsListWidget.addItem(MyListItem(i[1]+' '+i[2], i[0]))
 
         self.contactsListWidget.setCurrentRow(0)
         self.refresh_contacts_number()
@@ -242,6 +242,44 @@ class MainWindow(QMainWindow):
         categories = [i[1] for i in self.db.get_categories(self.user)]
         dialogs.DelCategoriesDlg(categories, self).exec_()
         self.fill_categComboBox()
+
+    def search(self):
+        self.categComboBox.setCurrentIndex(0)
+        self.showLabel.clear()
+        self.contactsListWidget.clear()
+
+        txt = self.searchLineEdit.text()
+
+        if all(i == ' ' for i in txt):
+            self.fill_ListWidget()
+            return
+
+        must_appear = []
+        contacts = self.db.get_all_contacts(self.user)
+
+        if not ' ' in txt:
+            for i in contacts:
+                if txt.lower() in i[1].lower() or txt.lower() in i[2].lower():
+                    must_appear.append(i)
+        else:
+            try:
+                first, last = txt.split()
+            except ValueError:
+                return
+            for i in contacts:
+                _bool = bool(first.lower() in i[1].lower() or first.lower() in\
+                             i[2].lower() or last.lower() in i[1].lower() or \
+                             last.lower() in i[2].lower())
+                if _bool:
+                    must_appear.append(i)
+
+        for i in must_appear:
+            item = MyListItem(i[1] + ' ' + i[2], i[0])
+            self.contactsListWidget.addItem(item)
+
+        self.contactsListWidget.setCurrentRow(0)
+        self.refresh_contacts_number()
+        self.set_buttons_enabled()
 
     def backup(self):
         pass

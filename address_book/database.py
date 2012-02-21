@@ -20,8 +20,8 @@ import sqlite3
 class Database:
     class PrimaryKeyError(sqlite3.IntegrityError): pass
 
-    def __init__(self):
-        self.connection = sqlite3.connect("test.db")
+    def __init__(self, _file):
+        self.connection = sqlite3.connect(_file)
         self.cur = self.connection.cursor()
         self.create_tables()
 
@@ -44,7 +44,7 @@ class Database:
             surname TEXT,
             mail TEXT,
             address TEXT,
-            telephone INTEGER,
+            telephone TEXT,
             category INTEGER REFERENCES categories(id)
             ON UPDATE CASCADE ON DELETE CASCADE)''')
 
@@ -98,13 +98,20 @@ class Database:
 
     def get_all_contacts(self, user):
         categories = tuple(i[0] for i in self.get_categories(user))
+        if len(categories) == 1: categories = '({0})'.format(categories[0])
         cmd = 'SELECT * FROM contacts WHERE category IN {0}'.format(categories)
         return self.cur.execute(cmd).fetchall()
 
-    def addto_contacts(self, name, surname, mail, address, telephone, category):
+    def addto_contacts(self, data):
         cmd = 'INSERT INTO contacts(name, surname, mail, address, telephone, '
         cmd += 'category) VALUES(?, ?, ?, ?, ?, ?)'
-        self.cur.execute(cmd, (name, surname, mail, address, telephone, category))
+        self.cur.execute(cmd, tuple(data))
+        self.commit()
+
+    def edit_contact(self, data, _id):
+        cmd = 'UPDATE contacts SET name=?, surname=?, mail=?, address=?, '
+        cmd += 'telephone=?, category=? WHERE id=?'
+        self.cur.execute(cmd, tuple(data+[_id]))
         self.commit()
 
     def delete_contact(self, _id):

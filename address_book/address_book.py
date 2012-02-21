@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle('Address Book')
         self.resize(704, 459)
-        db_file = self.database_file()        
+        db_file = self.database_file()
         self.db = database.Database(db_file)
 
         dialog = dialogs.UserPanelDlg(self)
@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
         delete_categAction = c_action(self, 'Delete categories',
                                               triggered=self.delete_categories)
         backupAction = c_action(self, 'Backup', triggered=self.backup)
-        restoreAction = c_action(self, 'Restore', triggered=self.restore)                                      
+        restoreAction = c_action(self, 'Restore', triggered=self.restore)
         aboutAction = c_action(self, 'About', 'Ctrl+?', triggered=self.about)
 
         fileMenu = self.menuBar().addMenu('File')
@@ -239,13 +239,15 @@ class MainWindow(QMainWindow):
             self.fill_ListWidget()
 
     def delete_categories(self):
-        pass
+        categories = [i[1] for i in self.db.get_categories(self.user)]
+        dialogs.DelCategoriesDlg(categories, self).exec_()
+        self.fill_categComboBox()
 
     def backup(self):
         pass
 
     def restore(self):
-        pass    
+        pass
 
     def database_file(self):
         _file = 'addressbook.db'

@@ -17,7 +17,7 @@
 
 from PyQt4.QtGui import (QHBoxLayout, QVBoxLayout, QGridLayout, QDialog,
                   QFrame, QLabel, QLineEdit, QComboBox, QPushButton,
-                  QDialogButtonBox, QMessageBox)
+                  QListWidget, QDialogButtonBox, QMessageBox)
 
 import pyqttools
 
@@ -119,8 +119,8 @@ class UserPanelDlg(QDialog):
 
     def delete_user(self):
         user = self.userComboBox.currentText()
-        reply = QMessageBox.question(self, "Address Book - Delete User",
-                      "Are sou sure that you want to delete {0}?".format(user),
+        reply = QMessageBox.question(self, 'Address Book - Delete User',
+                      'Are sou sure that you want to delete {0}?'.format(user),
                                             QMessageBox.Yes|QMessageBox.Cancel)
         if reply == QMessageBox.Yes:
             self.db.delete_user(user)
@@ -133,6 +133,7 @@ class UserPanelDlg(QDialog):
     def reject(self):
         self.parent.close()
         QDialog.reject(self)
+
 
 class AddorEditContactDlg(QDialog):
     def __init__(self, categories, edit=False, data=[], parent=None):
@@ -197,7 +198,7 @@ class AddorEditContactDlg(QDialog):
                     raise ValidationError(
                                  'There is already a category with this name!')
             except ValidationError as e:
-                QMessageBox.warning(self, "Address Book - Error!", str(e))
+                QMessageBox.warning(self, 'Address Book - Error!', str(e))
                 self.categLineEdit.selectAll()
                 self.categLineEdit.setFocus()
                 return False
@@ -211,3 +212,44 @@ class AddorEditContactDlg(QDialog):
             else:
                 self.values.append(self.categComboBox.currentText())
             QDialog.accept(self)
+
+
+class DelCategoriesDlg(QDialog):
+    def __init__(self, categories, parent=None):
+        super(DelCategoriesDlg, self).__init__(parent)
+        self.setWindowTitle('Address Book - Delete Categories')
+        self.resize(302, 307)
+
+        self.parent = parent
+        self.db = self.parent.db
+        self.categories = categories
+
+        self.ListWidget = QListWidget()
+        self.delButton = QPushButton('Delete')
+        vlayout = pyqttools.add_to_layout(QVBoxLayout(),(self.delButton, None))
+        f_layout = pyqttools.add_to_layout(QHBoxLayout(),
+                                                    (self.ListWidget, vlayout))
+        self.setLayout(f_layout)
+
+        self.delButton.clicked.connect(self.delete)
+
+        self.fill_ListWidget()
+
+    def fill_ListWidget(self):
+        self.ListWidget.clear()
+        self.ListWidget.addItems(self.categories)
+        self.set_enable()
+
+    def set_enable(self):
+        self.delButton.setEnabled(bool(self.ListWidget))
+
+    def delete(self):
+        categ = self.ListWidget.currentItem().text()
+        categ_id = self.db.get_category_id(categ, self.parent.user)
+        reply = QMessageBox.question(self, 'Address Book - Delete User',
+              'Are sou sure that you want to delete {0} and all its contacts?'\
+                            .format(categ), QMessageBox.Yes|QMessageBox.Cancel)
+        if reply == QMessageBox.Yes:
+            self.db.delete_category(categ_id)
+            self.categories.remove(categ)
+            self.fill_ListWidget()

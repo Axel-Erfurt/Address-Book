@@ -88,6 +88,10 @@ class Database:
         self.cur.execute('INSERT INTO categories(name, user) VALUES(?, ?)', (name, user))
         self.commit()
 
+    def delete_category(self, _id):
+        self.cur.execute('DELETE FROM categories WHERE id=?', (_id,))
+        self.commit()
+
     def get_contact_from_id(self, _id):
         self.cur.execute('SELECT * FROM contacts WHERE id=?', (_id,))
         return self.cur.fetchall()

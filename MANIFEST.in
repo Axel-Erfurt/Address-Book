@@ -1,0 +1,3 @@
+include AUTHORS COPYING addressbook
+include data/*
+include address_book/resources/*

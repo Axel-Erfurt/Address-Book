@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Address Book
+GenericName=Address Book
+Comment=GUI to organize your contacts
+Exec=addressbook
+Icon=addressbook
+Terminal=false
+Categories=Office;
+StartupNotify=false

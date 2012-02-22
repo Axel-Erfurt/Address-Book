@@ -11,3 +11,9 @@ Dependencies
 -------------
 python (>= 3.0)
 PyQt4
+
+Installation
+-------------
+You don't have to compile the program.
+From application's directory run as root:
+    python3 setup.py install

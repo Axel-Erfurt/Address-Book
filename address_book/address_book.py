@@ -22,10 +22,11 @@ from PyQt4.QtCore import Qt, QSize, QT_VERSION_STR,PYQT_VERSION_STR
 from PyQt4.QtGui import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                   QHBoxLayout, QLabel, QComboBox, QListWidget, QLineEdit,
                   QPushButton, QToolButton, QFrame, QIcon, QListWidgetItem,
-                  QMessageBox)
+                  QMessageBox, QFileDialog)
 
 import os
 import sys
+import shutil
 import platform
 import dialogs
 import pyqttools
@@ -42,8 +43,8 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle('Address Book')
         self.resize(704, 459)
-        db_file = self.database_file()
-        self.db = database.Database(db_file)
+        self.db_file = self.database_file()
+        self.db = database.Database(self.db_file)
 
         dialog = dialogs.UserPanelDlg(self)
         if dialog.exec_():
@@ -222,8 +223,8 @@ class MainWindow(QMainWindow):
             self.fill_categComboBox()
 
     def delete_contact(self):
-        reply = QMessageBox.question(self, "Address Book - Delete Contact",
-        "Are you sure that you want to delete this contact?",
+        reply = QMessageBox.question(self, 'Address Book - Delete Contact',
+        'Are you sure that you want to delete this contact?',
         QMessageBox.Yes|QMessageBox.Cancel)
         if reply == QMessageBox.Yes:
             _id = self.contactsListWidget.currentItem()._id
@@ -231,8 +232,8 @@ class MainWindow(QMainWindow):
             self.fill_ListWidget()
 
     def delete_all(self):
-        reply = QMessageBox.question(self, "Address Book - Delete Contact",
-        "Are you sure that you want to delete all contacts?",
+        reply = QMessageBox.question(self, 'Address Book - Delete Contact',
+        'Are you sure that you want to delete all contacts?',
         QMessageBox.Yes|QMessageBox.Cancel)
         if reply == QMessageBox.Yes:
             self.db.delete_all_contacts()
@@ -267,11 +268,10 @@ class MainWindow(QMainWindow):
             except ValueError:
                 return
             for i in contacts:
-                _bool = bool(first.lower() in i[1].lower() or first.lower() in\
-                             i[2].lower() or last.lower() in i[1].lower() or \
+                _bool = bool(first.lower() in i[1].lower() or first.lower() in
+                             i[2].lower() or last.lower() in i[1].lower() or
                              last.lower() in i[2].lower())
-                if _bool:
-                    must_appear.append(i)
+                if _bool: must_appear.append(i)
 
         for i in must_appear:
             item = MyListItem(i[1] + ' ' + i[2], i[0])
@@ -282,10 +282,28 @@ class MainWindow(QMainWindow):
         self.set_buttons_enabled()
 
     def backup(self):
-        pass
+        fname = QFileDialog.getSaveFileName(self,'Address Book - Backup','.db')
+        if fname:
+            try:
+                shutil.copy(self.db_file, fname)
+            except IOError:
+                pass
 
     def restore(self):
-        pass
+        reply = QMessageBox.question(self, 'Address Book - Restore',
+            'All current contacts will be deleted.\nAre you sure that you want'
+            ' to continue?', QMessageBox.Yes|QMessageBox.Cancel)
+        if reply == QMessageBox.Yes:
+            fname = QFileDialog.getOpenFileName(self, 'Address Book - Restore')
+            if fname:
+                msg = 'Succesful restore!\nPlease restart the program.'
+                try:
+                    os.remove(self.db_file)
+                    shutil.copy(fname, self.db_file)
+                except (OSError, IOError):
+                    msg = 'Restore failed!\nPlease restart the program.'
+                QMessageBox.information(self, 'Addess Book - Restore', msg)
+                sys.exit()
 
     def database_file(self):
         _file = 'addressbook.db'
@@ -302,7 +320,7 @@ class MainWindow(QMainWindow):
             <p>Gui application to organize your contacts!
             <p>Copyright &copy; 2012 Ilias Stamatis
             <br>License: GNU GPL3
-            <p><a href="{1}">http://wiki.ubuntu-gr.org/Address Book</a>
+            <p><a href='{1}'>http://wiki.ubuntu-gr.org/Address Book</a>
             <p>Python {2} - Qt {3} - PyQt {4} on {5}'''
             .format(__version__, link, platform.python_version()[:5],
             QT_VERSION_STR, PYQT_VERSION_STR, platform.system()))

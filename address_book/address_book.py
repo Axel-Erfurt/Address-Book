@@ -296,14 +296,15 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.Yes:
             fname = QFileDialog.getOpenFileName(self, 'Address Book - Restore')
             if fname:
-                msg = 'Succesful restore!\nPlease restart the program.'
+                msg = 'Succesful restore!'
                 try:
                     os.remove(self.db_file)
                     shutil.copy(fname, self.db_file)
                 except (OSError, IOError):
-                    msg = 'Restore failed!\nPlease restart the program.'
+                    msg = 'Restore failed!'
                 QMessageBox.information(self, 'Addess Book - Restore', msg)
-                sys.exit()
+                self.db = database.Database(self.db_file)
+                self.fill_categComboBox()
 
     def database_file(self):
         _file = 'addressbook.db'

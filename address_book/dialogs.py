@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # Copyright (C) 2012 Ilias Stamatis <stamatis.iliass@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,7 +17,7 @@ from PyQt4.QtGui import (QHBoxLayout, QVBoxLayout, QGridLayout, QDialog,
                   QFrame, QLabel, QLineEdit, QComboBox, QPushButton,
                   QListWidget, QDialogButtonBox, QMessageBox)
 
-import pyqttools
+from address_book import pyqttools
 
 class ValidationError(Exception): pass
 

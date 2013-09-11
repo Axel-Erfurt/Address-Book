@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # Copyright (C) 2012 Ilias Stamatis <stamatis.iliass@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __init__ import __version__
-from resources import qrc_resources
 
 from PyQt4.QtCore import Qt, QSize, QT_VERSION_STR,PYQT_VERSION_STR
 from PyQt4.QtGui import (QApplication, QMainWindow, QWidget, QVBoxLayout,
@@ -28,10 +24,12 @@ import os
 import sys
 import shutil
 import platform
-import dialogs
-import pyqttools
-import database
 
+from address_book import __version__
+from address_book import dialogs
+from address_book import pyqttools
+from address_book import database
+from address_book.resources import qrc_resources
 
 class MyListItem(QListWidgetItem):
     def __init__(self, text, _id, parent=None):

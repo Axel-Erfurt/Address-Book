@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-#
 # Copyright (C) 2012 Ilias Stamatis <stamatis.iliass@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify

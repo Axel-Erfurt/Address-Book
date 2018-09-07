@@ -14,11 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from PyQt4.QtCore import Qt, QSize, QT_VERSION_STR,PYQT_VERSION_STR
-from PyQt4.QtGui import (QApplication, QMainWindow, QWidget, QVBoxLayout,
+from PyQt5.QtCore import Qt, QSize, QT_VERSION_STR,PYQT_VERSION_STR, QFile
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                   QHBoxLayout, QLabel, QComboBox, QListWidget, QLineEdit,
-                  QPushButton, QToolButton, QFrame, QIcon, QListWidgetItem,
+                  QPushButton, QToolButton, QFrame, QListWidgetItem,
                   QMessageBox, QFileDialog)
+from PyQt5.QtGui import QIcon
 
 import os
 import sys
@@ -280,11 +281,14 @@ class MainWindow(QMainWindow):
         self.set_buttons_enabled()
 
     def backup(self):
-        fname = QFileDialog.getSaveFileName(self,'Address Book - Backup','.db')
+        fname,_ = QFileDialog.getSaveFileName(self,'Address Book - Backup','.db')
         if fname:
+            print(fname)
             try:
-                shutil.copy(self.db_file, fname)
+                QFile.copy(self.db_file, fname)
+#                shutil.copy(str(self.db_file), str(fname))
             except IOError:
+                print("Export Error")
                 pass
 
     def restore(self):

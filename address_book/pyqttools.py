@@ -17,8 +17,8 @@
 Some useful functions to automate some parts of ui creation.
 """
 
-from PyQt4.QtGui import QWidget, QLayout, QSpacerItem, QAction, QMenu
-from PyQt4.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QLayout, QSpacerItem, QAction, QMenu
+from PyQt5.QtCore import Qt
 
 def add_to_layout(layout, items):
     """Add items to QVBox and QHBox layouts easily.

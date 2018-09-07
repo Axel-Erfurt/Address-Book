@@ -10,10 +10,7 @@ The application is written in python3 and PyQt4. All code is licensed under the 
 Dependencies
 -------------
 python (>= 3.0)
-PyQt4
+PyQt5
 
-Installation
--------------
-You don't have to compile the program.
-From application's directory run as root:
-    python3 setup.py install
+run:
+    python3 addressbook.py

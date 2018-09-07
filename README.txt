@@ -1,3 +1,4 @@
+* Adapted for PyQt5
 =============
 Address Book
 =============
@@ -5,7 +6,7 @@ Address Book
 Description
 ------------
 Address Book is a simple, GUI, platform independent, multi-user application which helps you to organize your contacts.
-The application is written in python3 and PyQt4. All code is licensed under the GNU GPL3 license.
+The application is written in python3 and PyQt5. All code is licensed under the GNU GPL3 license.
 
 Dependencies
 -------------
